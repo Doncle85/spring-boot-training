@@ -28,10 +28,10 @@ import com.solacesystems.jcsmp.JCSMPException;
 import com.solacesystems.jcsmp.TextMessage;
 import com.solacesystems.jcsmp.XMLMessageListener;
 
-public class DemoMessageConsumer implements XMLMessageListener {
+public class MessageConsumer implements XMLMessageListener {
 
     private CountDownLatch latch = new CountDownLatch(1);
-    private static final Logger logger = LoggerFactory.getLogger(DemoMessageConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(MessageConsumer.class);
 
     public void onReceive(BytesXMLMessage msg) {
         if (msg instanceof TextMessage) {

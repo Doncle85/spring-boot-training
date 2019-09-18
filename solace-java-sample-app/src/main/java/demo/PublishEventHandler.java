@@ -24,8 +24,8 @@ import org.slf4j.LoggerFactory;
 import com.solacesystems.jcsmp.JCSMPException;
 import com.solacesystems.jcsmp.JCSMPStreamingPublishEventHandler;
 
-public class DemoPublishEventHandler implements JCSMPStreamingPublishEventHandler {
-    private static final Logger logger = LoggerFactory.getLogger(DemoPublishEventHandler.class);
+public class PublishEventHandler implements JCSMPStreamingPublishEventHandler {
+    private static final Logger logger = LoggerFactory.getLogger(PublishEventHandler.class);
 
     public void responseReceived(String messageID) {
         logger.info("Producer received response for msg: " + messageID);
