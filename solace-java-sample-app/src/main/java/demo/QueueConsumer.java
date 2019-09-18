@@ -25,20 +25,27 @@ import com.solacesystems.jcsmp.XMLMessageListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MessageConsumer implements XMLMessageListener {
+public class QueueConsumer implements XMLMessageListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(MessageConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(QueueConsumer.class);
 
     public void onReceive(BytesXMLMessage msg) {
         if (msg instanceof TextMessage) {
             logger.info("============= TextMessage received: {}", ((TextMessage) msg).getText());
         } else {
-            logger.info("============= Message received is not instance of TextMessage...");
+            logger.info("Not a texte message");
         }
+//        System.out.printf("Message Dump:%n%s%n", msg.dump());
+        // When the ack mode is set to SUPPORTED_MESSAGE_ACK_CLIENT,
+        // guaranteed delivery messages are acknowledged after
+        // processing
+        msg.ackMessage();
+
     }
 
     public void onException(JCSMPException e) {
-        logger.info("Consumer received exception:", e);
+        System.out.printf("Consumer received exception: %s%n", e);
     }
+
 
 }

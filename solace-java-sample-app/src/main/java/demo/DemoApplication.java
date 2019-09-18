@@ -18,9 +18,7 @@
  */
 package demo;
 
-import java.util.concurrent.TimeUnit;
-
-import com.solacesystems.jcsmpx.impl.TopicProducerImpl;
+import com.solacesystems.jcsmp.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,15 +26,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Component;
-
-import com.solacesystems.jcsmp.DeliveryMode;
-import com.solacesystems.jcsmp.JCSMPFactory;
-import com.solacesystems.jcsmp.JCSMPSession;
-import com.solacesystems.jcsmp.SpringJCSMPFactory;
-import com.solacesystems.jcsmp.TextMessage;
-import com.solacesystems.jcsmp.Topic;
-import com.solacesystems.jcsmp.XMLMessageConsumer;
-import com.solacesystems.jcsmp.XMLMessageProducer;
 
 @SpringBootApplication
 public class DemoApplication {
@@ -50,49 +39,67 @@ public class DemoApplication {
 
         private static final Logger logger = LoggerFactory.getLogger(Runner.class);
 
-        private final Topic topic = JCSMPFactory.onlyInstance().createTopic("tutorial/topic");
+        private final Topic topic = JCSMPFactory.onlyInstance().createTopic("broadcast/topic");
+        private final Queue queue = JCSMPFactory.onlyInstance().createQueue("leah");
 
         @Autowired
         private SpringJCSMPFactory solaceFactory;
 
         private MessageConsumer msgConsumer = new MessageConsumer();
         private PublishEventHandler pubEventHandler = new PublishEventHandler();
+        private QueueConsumer queueConsumer = new QueueConsumer();
 
         public void run(String... strings) throws Exception {
-            final String msg = "Hello World";
 
             final JCSMPSession session = solaceFactory.createSession();
 
             session.addSubscription(topic);
             logger.info("Connected. Awaiting message...");
 
+            // consumer starting
             XMLMessageConsumer messageConsumer = session.getMessageConsumer(msgConsumer);
             messageConsumer.start();
 
-            // Consumer session is now hooked up and running!
-
-            // Anonymous inner-class for handling publishing events
             XMLMessageProducer producer = session.getMessageProducer(pubEventHandler);
-            // Publish-only session is now hooked up and running!
+            producer.send(createTextMessage("Hello", DeliveryMode.DIRECT), topic);
+            waitForMessage();
+            producer.send(createTextMessage("This is Leah", DeliveryMode.DIRECT), topic);
+            waitForMessage();
 
-            TextMessage jcsmpMsg = JCSMPFactory.onlyInstance().createMessage(TextMessage.class);
-            jcsmpMsg.setText(msg);
-            jcsmpMsg.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-            logger.info("============= Sending " + msg);
-            producer.send(jcsmpMsg, topic);
+            // queue
+            final EndpointProperties endpointProps = new EndpointProperties();
+            endpointProps.setPermission(EndpointProperties.PERMISSION_CONSUME);
+            endpointProps.setAccessType(EndpointProperties.ACCESSTYPE_EXCLUSIVE);
+            session.provision(queue, endpointProps, JCSMPSession.FLAG_IGNORE_ALREADY_EXISTS);
 
-            try {
-                // block here until message received, and latch will flip
-                msgConsumer.getLatch().await(10, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                logger.error("I was awoken while waiting");
-            }
+            // flow props
+            final ConsumerFlowProperties flowProperties = new ConsumerFlowProperties();
+            flowProperties.setEndpoint(queue);
+            flowProperties.setAckMode(JCSMPProperties.SUPPORTED_MESSAGE_ACK_CLIENT);
 
-            // Close messageConsumer
+            FlowReceiver flowReceiver = session.createFlow(queueConsumer, flowProperties, endpointProps);
+            flowReceiver.start();
+
+            producer.send(createTextMessage("@dishand How is the weather ?", DeliveryMode.PERSISTENT), queue);
+            waitForMessage();
+
+            // Close messageConsumer / flow receiver
             logger.info("Closing consumer and closing session.");
             messageConsumer.close();
+            flowReceiver.close();
             session.closeSession();
         }
+
+        private void waitForMessage() throws InterruptedException {
+            Thread.sleep(1000L);
+        }
+    }
+
+    private static TextMessage createTextMessage(String msg, DeliveryMode deliveryMode) {
+        TextMessage jcsmpMsg = JCSMPFactory.onlyInstance().createMessage(TextMessage.class);
+        jcsmpMsg.setText(msg);
+        jcsmpMsg.setDeliveryMode(deliveryMode);
+        return jcsmpMsg;
     }
 }
