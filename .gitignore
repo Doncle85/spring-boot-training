@@ -1,9 +1,30 @@
-.project
-.settings/
+HELP.md
+target/
+!**/src/main/**
+!**/src/test/**
+
+### STS ###
+.apt_generated
 .classpath
-bin/
 .factorypath
-solace-java-spring-boot-autoconfigure/.factorypath
-.idea
-*.iml
+.project
+.settings
 .springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+
+### VS Code ###
+.vscode/
