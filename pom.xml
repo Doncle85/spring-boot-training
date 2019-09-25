@@ -34,15 +34,6 @@
 		</license>
 	</licenses>
 
-	<developers>
-		<developer>
-			<name>support</name>
-			<email>support@solace.com</email>
-			<organization>Solace</organization>
-			<organizationUrl>http://dev.solace.com</organizationUrl>
-		</developer>
-	</developers>
-
 	<scm>
 		<url>https://github.com/SolaceProducts/solace-java-spring-boot.git</url>
 		<connection>scm:git:git://github.com/SolaceProducts/solace-java-spring-boot.git</connection>
@@ -146,10 +137,6 @@
 				<gpg.executable>gpg2</gpg.executable>
 				<gpg.passphrase>Solace1!</gpg.passphrase>
 			</properties>
-			<modules>
-				<module>solace-java-spring-boot-autoconfigure</module>
-				<module>solace-java-spring-boot-starter</module>
-			</modules>
 			<distributionManagement>
 				<snapshotRepository>
 					<id>ossrh</id>
@@ -202,10 +189,6 @@
 					<name>!releaseCentral</name>
 				</property>
 			</activation>
-			<modules>
-				<module>solace-java-spring-boot-autoconfigure</module>
-				<module>solace-java-spring-boot-starter</module>
-			</modules>
 			<distributionManagement>
 				<repository>
 					<id>releases</id>
